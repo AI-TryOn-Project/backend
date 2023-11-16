@@ -23,6 +23,44 @@ def extract_domain(url):
         domain = domain[4:]
     return domain
 
+@app.route('/get-size-recommendation', methods=['POST'])
+def get_size_recommendation():
+    data = request.get_json()
+    body_measurements = data.get('body_measurements')
+    base64_image = data.get('base64_image')
+
+    print(f"Body measurements: {body_measurements}")
+
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"Can you parse the size chart image and give me size recomendation with my {body_measurements} in less than 100 words?"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": base64_image,
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+    print(response.choices[0])
+    choice = response.choices[0]
+    content_text = choice.message.content
+
+    print(content_text)
+
+    return jsonify(content_text)
+
+
 @app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
     data = request.get_json()
