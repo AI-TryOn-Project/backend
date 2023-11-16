@@ -49,6 +49,8 @@ def get_size_guide():
     category_ids = [category['category_id'] for category in categories]
     print(f"Category IDs for brand {link_record['brand_name']}: {category_ids}")
 
+    filtered_categories = [category for category in category_ids if "numeric" not in category]
+
     print(f"Page title: {page_title}")
     print(f"Image URL: {img_src_url}")
 
@@ -60,7 +62,7 @@ def get_size_guide():
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Based on the title {page_title} and the picture, which category {category_ids} it most likely fall into, answer with one word. The category should usually have the word `alpha` in it, otherwise fallback to category without the word `alpha`"
+                        "text": f"Based on the title {page_title} and the picture, find which category {filtered_categories} it most likely fall into, answer with one word and it must be in the list of categories"
                     },
                     {
                         "type": "image_url",
