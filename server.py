@@ -2,8 +2,8 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from urllib.parse import urlparse
-
 from flask_cors import CORS
+from openai import OpenAI
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +13,8 @@ client = MongoClient('mongodb://localhost/')  # Update with your MongoDB URI if 
 db = client.brand  # Replace with your database name
 links_collection = db.links
 size_guides_collection = db.size_guide
+
+client = OpenAI()
 
 def extract_domain(url):
     parsed_url = urlparse(url)
@@ -25,7 +27,8 @@ def extract_domain(url):
 def get_size_guide():
     data = request.get_json()
     product_url = data.get('product_url')
-    category_id = data.get('category_id')
+    img_src_url = data.get('img_src_url')
+    page_title = data.get('page_title')
 
     if not product_url:
         return jsonify({"error": "Product URL is required"}), 400
@@ -45,6 +48,40 @@ def get_size_guide():
     categories = size_guides_collection.find({'brand_id': ObjectId(brand_id)})
     category_ids = [category['category_id'] for category in categories]
     print(f"Category IDs for brand {link_record['brand_name']}: {category_ids}")
+
+    print(f"Page title: {page_title}")
+    print(f"Image URL: {img_src_url}")
+
+    response = client.chat.completions.create(
+        model="gpt-4-vision-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"Based on the title {page_title} and the picture, which category {category_ids} it most likely fall into, answer with one word. The category should usually have the word `alpha` in it, otherwise fallback to category without the word `alpha`"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": img_src_url,
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+
+
+    print(response.choices[0])
+
+    choice = response.choices[0]
+    content_text = choice.message.content
+
+    print(content_text)
+    category_id = content_text
 
     # Find the size guide based on brand_id and category_id
     size_guide = size_guides_collection.find_one({
