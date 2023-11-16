@@ -21,10 +21,11 @@ def extract_domain(url):
         domain = domain[4:]
     return domain
 
-@app.route('/get-size-guide', methods=['GET'])
+@app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
-    product_url = request.args.get('product_url')
-    category_id = request.args.get('category_id')
+    data = request.get_json()
+    product_url = data.get('product_url')
+    category_id = data.get('category_id')
 
     if not product_url:
         return jsonify({"error": "Product URL is required"}), 400
