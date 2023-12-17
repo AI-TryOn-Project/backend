@@ -100,7 +100,7 @@ def get_size_guide():
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Based on the title {page_title} and the picture, find which category {filtered_categories} it most likely fall into, answer with one word and it must be in the list of categories"
+                        "text": f"Based on the title {page_title} and the picture, find which category {filtered_categories} it most likely fall into, answer with one word and it must be in the list of categories, avoid using plus size category unless the person in the picture is very fat"
                     },
                     {
                         "type": "image_url",
