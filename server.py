@@ -137,4 +137,5 @@ def get_size_guide():
     return jsonify(size_guide.get('sizes'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5001, debug=True)
+
