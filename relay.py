@@ -35,6 +35,7 @@ def convert_image_to_base64(url):
     image.save(buffered, format=image_format)
     return base64.b64encode(buffered.getvalue()).decode()
 
+@app.route('/', methods=['POST'])
 @app.route('/relay', methods=['POST'])
 def relay():
     now = datetime.now()
