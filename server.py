@@ -28,8 +28,16 @@ def get_size_recommendation():
     data = request.get_json()
     body_measurements = data.get('body_measurements')
     base64_image = data.get('base64_image')
+    showing_chart = data.get('showing_chart', False)  # Defaults to False if not provided
 
     print(f"Body measurements: {body_measurements}")
+
+    if showing_chart:
+        prompt = f"Can you parse the size table on this image, and write html code to represent that table (just the table, with minimum style, and no other texts), and my body measurements are {body_measurements}, can you highlight the corresponding cells on the table? Your answer should only contain the code itself"
+        max_tokens = 1000  # Adjusted for potential complexity of HTML table
+    else:
+        prompt = f"Can you parse the size table on this image, and my body measurements are {body_measurements}, can you give my size recommadation, if there is no perfect match, e.g. different body part match to different size, give me explaination, be concise when possible"
+        max_tokens = 300
 
     response = client.chat.completions.create(
         model="gpt-4-vision-preview",
@@ -39,7 +47,7 @@ def get_size_recommendation():
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Can you parse the size chart image and give me size recomendation with my {body_measurements} in less than 100 words?"
+                        "text": prompt
                     },
                     {
                         "type": "image_url",
@@ -50,7 +58,7 @@ def get_size_recommendation():
                 ],
             }
         ],
-        max_tokens=300,
+        max_tokens=max_tokens,
     )
     print(response.choices[0])
     choice = response.choices[0]
