@@ -33,7 +33,7 @@ def get_size_recommendation():
     print(f"Body measurements: {body_measurements}")
 
     if showing_chart:
-        prompt = f"Can you parse the size table on this image, and write html code to represent that table (just the table, with minimum style, and no other texts), and my body measurements are {body_measurements}, can you highlight the corresponding cells on the table? Your answer should only contain the code itself"
+        prompt = f"Can you parse the size table on this image, and generate compact json to represent that table, your answer should only contain the json itself, each entry should only contain Bust, Waist, Hips, Size, the answer should just bee pure text, without ticks prefix"
         max_tokens = 1000  # Adjusted for potential complexity of HTML table
     else:
         prompt = f"Can you parse the size table on this image, and my body measurements are {body_measurements}, can you give my size recommadation, if there is no perfect match, e.g. different body part match to different size, give me explaination, be concise when possible"
