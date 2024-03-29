@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 from flask_cors import CORS
+# Assuming you have an OpenAI library that supports GPT-4 Vision (this is a placeholder)
 from openai import OpenAI
 
 app = Flask(__name__)
@@ -13,8 +14,16 @@ client = MongoClient('mongodb://localhost/')  # Update with your MongoDB URI if 
 db = client.brand  # Replace with your database name
 links_collection = db.links
 size_guides_collection = db.size_guide
+# Create a new collection for storing request results
+recommendations_collection = db.recommendations
 
+# OpenAI client (this is a placeholder, ensure your OpenAI library supports this syntax)
 client = OpenAI()
+
+def clean_url(url):
+    parsed_url = urlparse(url)
+    # Return the URL without query parameters
+    return urlunparse(parsed_url._replace(query=""))
 
 def extract_domain(url):
     parsed_url = urlparse(url)
@@ -28,7 +37,16 @@ def get_size_recommendation():
     data = request.get_json()
     body_measurements = data.get('body_measurements')
     base64_image = data.get('base64_image')
-    showing_chart = data.get('showing_chart', False)  # Defaults to False if not provided
+    tabUrl = data.get('tabUrl')  # New parameter
+    showing_chart = data.get('showing_chart', False)
+    
+    # Clean the URL to remove query parameters
+    cleaned_url = clean_url(tabUrl)
+
+    # Check if there is an existing entry for this URL
+    existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
+    if existing_entry:
+        return jsonify(existing_entry["recommendation"]), 200  # Return the stored result
 
     print(f"Body measurements: {body_measurements}")
 
@@ -65,6 +83,7 @@ def get_size_recommendation():
     content_text = choice.message.content
 
     print(content_text)
+    recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": content_text})
 
     return jsonify(content_text)
 
@@ -78,6 +97,14 @@ def get_size_guide():
 
     if not product_url:
         return jsonify({"error": "Product URL is required"}), 400
+
+    # Clean the product_url to remove query parameters
+    cleaned_product_url = clean_url(product_url)
+
+    # Check if there's an existing entry for this cleaned URL in recommendations_collection
+    existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_product_url})
+    if existing_entry:
+        return jsonify(existing_entry["recommendation"]), 200  # Return the stored result directly
 
     domain = extract_domain(product_url)
     print(f"Domain: {domain}")
