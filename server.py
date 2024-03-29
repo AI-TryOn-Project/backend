@@ -5,6 +5,7 @@ from urllib.parse import urlparse, urlunparse
 from flask_cors import CORS
 # Assuming you have an OpenAI library that supports GPT-4 Vision (this is a placeholder)
 from openai import OpenAI
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -42,7 +43,8 @@ def get_size_recommendation():
     
     # Clean the URL to remove query parameters
     cleaned_url = clean_url(tabUrl)
-
+    
+    print(cleaned_url)
     # Check if there is an existing entry for this URL
     existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
     if existing_entry:
@@ -83,7 +85,7 @@ def get_size_recommendation():
     content_text = choice.message.content
 
     print(content_text)
-    recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": content_text})
+    recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
 
     return jsonify(content_text)
 
@@ -100,7 +102,7 @@ def get_size_guide():
 
     # Clean the product_url to remove query parameters
     cleaned_product_url = clean_url(product_url)
-
+    print(cleaned_product_url)
     # Check if there's an existing entry for this cleaned URL in recommendations_collection
     existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_product_url})
     if existing_entry:
