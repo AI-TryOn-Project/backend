@@ -46,14 +46,15 @@ def get_size_recommendation():
     
     print(cleaned_url)
     # Check if there is an existing entry for this URL
-    existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
-    if existing_entry:
-        return jsonify(existing_entry["recommendation"]), 200  # Return the stored result
+    if tabUrl:
+        existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
+        if existing_entry:
+            return jsonify(existing_entry["recommendation"]), 200  # Return the stored result
 
     print(f"Body measurements: {body_measurements}")
 
     if showing_chart:
-        prompt = f"Can you parse the size table on this image, and generate compact json to represent that table, your answer should only contain the json itself, each entry should only contain Bust, Waist, Hips, Size, the answer should just bee pure text, without ticks prefix"
+        prompt = f"Can you parse the size table on this image, and generate compact json to represent that table, your answer should only contain the json itself, each entry should only contain Bust, Waist, Hips, Size, the answer should just be pure text, without ticks prefix, if size is a range, add double quote around it to make sure it is a valid json"
         max_tokens = 1000  # Adjusted for potential complexity of HTML table
     else:
         prompt = f"Can you parse the size table on this image, and my body measurements are {body_measurements}, can you give my size recommadation, if there is no perfect match, e.g. different body part match to different size, give me explaination, be concise when possible"
@@ -85,8 +86,10 @@ def get_size_recommendation():
     content_text = choice.message.content
 
     print(content_text)
-    recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
-
+    if tabUrl:
+        recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
+        return jsonify(json.loads(content_text))
+    
     return jsonify(content_text)
 
 
@@ -97,8 +100,8 @@ def get_size_guide():
     img_src_url = data.get('img_src_url')
     page_title = data.get('page_title')
 
-    if not product_url:
-        return jsonify({"error": "Product URL is required"}), 400
+    # if not product_url:
+    #    return jsonify({"error": "Product URL is required"}), 400
 
     # Clean the product_url to remove query parameters
     cleaned_product_url = clean_url(product_url)
