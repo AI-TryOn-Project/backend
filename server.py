@@ -46,15 +46,15 @@ def get_size_recommendation():
     
     print(cleaned_url)
     # Check if there is an existing entry for this URL
-    if tabUrl:
-        existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
-        if existing_entry:
-            return jsonify(existing_entry["recommendation"]), 200  # Return the stored result
+    # if tabUrl:
+    #    existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_url})
+    #    if existing_entry:
+    #        return jsonify(existing_entry["recommendation"]), 200  # Return the stored result
 
     print(f"Body measurements: {body_measurements}")
 
     if showing_chart:
-        prompt = f"Can you parse the size table on this image, and generate compact json to represent that table, your answer should only contain the json itself, each entry should only contain Bust, Waist, Hips, Size, the answer should just be pure text, without ticks prefix, if size is a range, add double quote around it to make sure it is a valid json"
+        prompt = f"Can you parse the size table on this image, and generate compact json to represent that table, your answer should only contain the json itself, each entry should at most contain Bust, Waist, Hips, Size(if they don't appear on the image size table, then don't include it in the json), the answer should just be pure text, without ticks prefix, if size is a range, add double quote around it to make sure it is a valid json"
         max_tokens = 1000  # Adjusted for potential complexity of HTML table
     else:
         prompt = f"Can you parse the size table on this image, and my body measurements are {body_measurements}, can you give my size recommadation, if there is no perfect match, e.g. different body part match to different size, give me explaination, be concise when possible"
