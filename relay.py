@@ -89,7 +89,7 @@ def relay():
     print("Ready to send to reactor. Current Time:", current_time)
     
     # Make the POST request to the target API
-    response = requests.post('http://localhost:7860/reactor/image', json=full_data)
+    response = requests.post('https://sd2.tianlong.co.uk/reactor/image', json=full_data)
 
     # Handle the response
     if response.status_code == 200:
