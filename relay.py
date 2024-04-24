@@ -95,7 +95,15 @@ def relay():
     if response.status_code == 200:
         return jsonify(response.json())
     else:
-        return jsonify({"error": "Failed to process image"}), response.status_code
+        # Specify the path to your image file
+        image_path = '/home/faishion/backend/maintain.png'
+        
+        # Open the image, read it, and encode it to base64
+        with open(image_path, 'rb') as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+        
+        # Return the base64-encoded image in the response
+        return jsonify({"image": encoded_image})
 
 if __name__ == '__main__':
     app.run(debug=False)
