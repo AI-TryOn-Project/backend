@@ -26,6 +26,9 @@ def clean_url(url):
     # Return the URL without query parameters
     return urlunparse(parsed_url._replace(query=""))
 
+def is_contain_grass(url):
+    return "grass" in url
+
 def extract_domain(url):
     parsed_url = urlparse(url)
     domain = parsed_url.netloc
@@ -104,6 +107,9 @@ def get_size_guide():
     #    return jsonify({"error": "Product URL is required"}), 400
 
     # Clean the product_url to remove query parameters
+    if is_contain_grass(product_url):
+        return jsonify({"success": "size guide is not support grasses"}), 200
+
     cleaned_product_url = clean_url(product_url)
     print(cleaned_product_url)
     # Check if there's an existing entry for this cleaned URL in recommendations_collection
