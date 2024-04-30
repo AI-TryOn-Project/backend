@@ -33,6 +33,42 @@ def extract_domain(url):
         domain = domain[4:]
     return domain
 
+@app.route('/analyze-profile', methods=['POST'])
+def analyze_profile():
+    data = request.get_json()
+    base64_image = data.get('base64_image')
+    if not base64_image:
+        return jsonify({"error": "Base64 image data is required"}), 400
+    
+    prompt = f"can you based on this profile image, generate the following characteristics: age, bodyShape, ethnic, sex, skinColor. And generate compact json to represent it, the answer should just be pure text, without ticks prefix, it should only contain the characteristics I listed above, where age should be pure number, bodyShape will be one of Slim, Fit, Curvy"
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": base64_image,
+                        },
+                    },
+                ],
+            }
+        ],
+        max_tokens=300,
+    )
+    print(response.choices[0])
+    choice = response.choices[0]
+    content_text = choice.message.content
+
+    print(content_text)
+    return jsonify(content_text)
+
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
     data = request.get_json()
@@ -61,7 +97,7 @@ def get_size_recommendation():
         max_tokens = 300
 
     response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4-turbo",
         messages=[
             {
                 "role": "user",
@@ -133,7 +169,7 @@ def get_size_guide():
     print(f"Image URL: {img_src_url}")
 
     response = client.chat.completions.create(
-        model="gpt-4-vision-preview",
+        model="gpt-4-turbo",
         messages=[
             {
                 "role": "user",
