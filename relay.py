@@ -35,6 +35,26 @@ def convert_image_to_base64(url):
     image.save(buffered, format=image_format)
     return base64.b64encode(buffered.getvalue()).decode()
 
+
+def forward_request(url):
+    # Extract JSON data from incoming request
+    incoming_data = request.get_json()
+    headers = {'Content-Type': 'application/json'}
+
+    # Forward the request to the specified URL
+    response = requests.post(url, json=incoming_data, headers=headers)
+    
+    # Return the response received from the remote server
+    return jsonify(response.json())
+
+@app.route('/advanced-test', methods=['POST'])
+def forward_test():
+    return forward_request("https://tryon-advanced-test.tianlong.co.uk/upload/images")
+
+@app.route('/advanced', methods=['POST'])
+def forward_production():
+    return forward_request("https://tryon-advanced.tianlong.co.uk/upload/images")
+
 @app.route('/', methods=['POST'])
 @app.route('/relay', methods=['POST'])
 def relay():
