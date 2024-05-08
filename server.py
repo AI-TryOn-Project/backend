@@ -6,6 +6,7 @@ from flask_cors import CORS
 # Assuming you have an OpenAI library that supports GPT-4 Vision (this is a placeholder)
 from openai import OpenAI
 import json
+import logging
 
 app = Flask(__name__)
 CORS(app)
@@ -20,6 +21,9 @@ recommendations_collection = db.recommendations
 
 # OpenAI client (this is a placeholder, ensure your OpenAI library supports this syntax)
 client = OpenAI()
+
+logging.basicConfig(filename='app.log', level=logging.INFO,
+                    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 def clean_url(url):
     parsed_url = urlparse(url)
@@ -72,6 +76,12 @@ def analyze_profile():
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
     data = request.get_json()
+    
+    log_data = data.copy()
+    # Remove sensitive keys
+    log_data.pop('base64_image', None)
+    logging.info(f"New size recommendation request: Request Data={log_data}")
+
     body_measurements = data.get('body_measurements')
     base64_image = data.get('base64_image')
     tabUrl = data.get('tabUrl')  # New parameter
@@ -135,6 +145,8 @@ def get_size_guide():
     product_url = data.get('product_url')
     img_src_url = data.get('img_src_url')
     page_title = data.get('page_title')
+
+    logging.info(f"New size guide request: Request Data={data}")
 
     # if not product_url:
     #    return jsonify({"error": "Product URL is required"}), 400
