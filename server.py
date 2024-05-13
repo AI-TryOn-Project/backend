@@ -44,7 +44,7 @@ def analyze_profile():
     if not base64_image:
         return jsonify({"error": "Base64 image data is required"}), 400
     
-    prompt = f"can you based on this profile image, generate the following characteristics: age, bodyShape, ethnic, sex, skinColor, hairStyle. And generate compact json to represent it, the answer should just be pure text, without ticks prefix, it should only contain the characteristics I listed above, where age should be pure number, bodyShape will be one of Slim, Fit, Curvy"
+    prompt = f"can you based on this profile image, generate the following characteristics: age, bodyShape, ethnic, sex, skinColor, hairStyle, hairColor. And generate compact json to represent it, the answer should just be pure text, without ticks prefix, it should only contain the characteristics I listed above, where age should be pure number, bodyShape will be one of Slim, Fit, Curvy"
     response = client.chat.completions.create(
         model="gpt-4-turbo",
         messages=[
