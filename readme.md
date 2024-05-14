@@ -45,8 +45,8 @@ reload automatically.
 
 We are using cloudflare tunnels to expose the services:
 ```
-sdrelay.tianlong.co.uk # http://localhost:5000
-api.tianlong.co.uk # http://localhost:5001
+sdrelay.faishion.ai # http://localhost:5000
+api.faishion.ai # http://localhost:5001
 ```
 
 Note that our researcher is developing a more comprehensive model in another machine under ```tryon-advanced.tianlong.co.uk```
