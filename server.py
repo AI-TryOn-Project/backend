@@ -46,7 +46,7 @@ def analyze_profile():
     
     prompt = f"can you based on this profile image, generate the following characteristics: age, bodyShape, ethnic, sex, skinColor, hairStyle, hairColor. And generate compact json to represent it, the answer should just be pure text, without ticks prefix, it should only contain the characteristics I listed above, where age should be pure number, bodyShape will be one of Slim, Fit, Curvy"
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
@@ -107,7 +107,7 @@ def get_size_recommendation():
         max_tokens = 300
 
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
@@ -181,7 +181,7 @@ def get_size_guide():
     print(f"Image URL: {img_src_url}")
 
     response = client.chat.completions.create(
-        model="gpt-4-turbo",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
