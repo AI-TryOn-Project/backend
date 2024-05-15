@@ -25,10 +25,12 @@ client = OpenAI()
 logging.basicConfig(filename='app.log', level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+
 def clean_url(url):
     parsed_url = urlparse(url)
     # Return the URL without query parameters
     return urlunparse(parsed_url._replace(query=""))
+
 
 def extract_domain(url):
     parsed_url = urlparse(url)
@@ -37,13 +39,14 @@ def extract_domain(url):
         domain = domain[4:]
     return domain
 
+
 @app.route('/analyze-profile', methods=['POST'])
 def analyze_profile():
     data = request.get_json()
     base64_image = data.get('base64_image')
     if not base64_image:
         return jsonify({"error": "Base64 image data is required"}), 400
-    
+
     prompt = f"can you based on this profile image, generate the following characteristics: age, bodyShape, ethnic, sex, skinColor, hairStyle, hairColor. And generate compact json to represent it, the answer should just be pure text, without ticks prefix, it should only contain the characteristics I listed above, where age should be pure number, bodyShape will be one of Slim, Fit, Curvy"
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -73,10 +76,11 @@ def analyze_profile():
     print(json.loads(content_text))
     return jsonify(json.loads(content_text))
 
+
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
     data = request.get_json()
-    
+
     log_data = data.copy()
     # Remove sensitive keys
     log_data.pop('base64_image', None)
@@ -86,10 +90,10 @@ def get_size_recommendation():
     base64_image = data.get('base64_image')
     tabUrl = data.get('tabUrl')  # New parameter
     showing_chart = data.get('showing_chart', False)
-    
+
     # Clean the URL to remove query parameters
     cleaned_url = clean_url(tabUrl)
-    
+
     print(cleaned_url)
     # Check if there is an existing entry for this URL
     # if tabUrl:
@@ -135,9 +139,79 @@ def get_size_recommendation():
     if tabUrl:
         recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
         return jsonify(json.loads(content_text))
-    
+
     return jsonify(content_text)
 
+
+def parse_dimension_range(range_str):
+    def convert_fractional_size(size_str):
+        if "½" in size_str:
+            return float(size_str.replace("½", "")) + 0.5
+        return float(size_str)
+
+    parts = [convert_fractional_size(part) for part in range_str.split(" - ")]
+    if len(parts) == 1:
+        return {"min": parts[0], "max": parts[0]}
+    return {"min": min(parts), "max": max(parts)}
+
+
+# Helper function to convert string with fractions to float
+def to_float(value):
+    if isinstance(value, (int, float)):
+        return float(value)
+    value = value.strip()
+    if '½' in value:
+        value = value.replace('½', '.5')
+    return float(value)
+
+
+# Helper function to check if a dimension is within a range
+def is_within_range(value, range_str):
+    range_str = str(range_str).strip()
+    if '-' in range_str:
+        low, high = map(to_float, range_str.split('-'))
+        return low <= value <= high
+    else:
+        return to_float(range_str) == value
+
+
+# Helper function to find the closest range
+def find_closest_range(value, ranges):
+    closest_range = None
+    closest_diff = float('inf')
+
+    for range_str in ranges:
+        range_str = str(range_str).strip()
+        if '-' in range_str:
+            low, high = map(to_float, range_str.split('-'))
+            diff = min(abs(low - value), abs(high - value))
+        else:
+            diff = abs(to_float(range_str) - value)
+
+        if diff < closest_diff:
+            closest_diff = diff
+            closest_range = range_str
+
+    return closest_range
+
+
+# Helper function to find the minimum and maximum values in the sizes
+def find_min_max(ranges):
+    min_val = float('inf')
+    max_val = float('-inf')
+
+    for range_str in ranges:
+        range_str = str(range_str).strip()
+        if '-' in range_str:
+            low, high = map(to_float, range_str.split('-'))
+            min_val = min(min_val, low)
+            max_val = max(max_val, high)
+        else:
+            val = to_float(range_str)
+            min_val = min(min_val, val)
+            max_val = max(max_val, val)
+
+    return min_val, max_val
 
 @app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
@@ -145,9 +219,25 @@ def get_size_guide():
     product_url = data.get('product_url')
     img_src_url = data.get('img_src_url')
     page_title = data.get('page_title')
+    # Initialize bodyDimensions
+    body_dimensions = None
+    # Extract dimensions
+    body_dimensions_in = data.get('bodyDimensionsIn')
+    body_dimensions_cm = data.get('bodyDimensionsCm')
+    # Check if both bodyDimensionsIn and bodyDimensionsCm are empty
+    if not body_dimensions_in and not body_dimensions_cm:
+        return jsonify({"error": "No body dimensions provided"}), 400
+
+    # Check if bodyDimensionsIn is empty and bodyDimensionsCm is provided
+    elif not body_dimensions_in and body_dimensions_cm:
+        # Convert cm to inches (1 inch = 2.54 cm)
+        body_dimensions = {key: round(value / 2.54, 2) for key, value in body_dimensions_cm.items()}
+
+    # If bodyDimensionsIn is provided, use it
+    else:
+        body_dimensions = body_dimensions_in
 
     logging.info(f"New size guide request: Request Data={data}")
-
     # if not product_url:
     #    return jsonify({"error": "Product URL is required"}), 400
 
@@ -164,7 +254,7 @@ def get_size_guide():
 
     # Search for the brand with and without 'www'
     link_record = links_collection.find_one({'$or': [{'domain_name': domain}, {'domain_name': 'www.' + domain}]})
-    
+
     if not link_record:
         return jsonify({"error": "Brand not found"}), 404
 
@@ -202,7 +292,6 @@ def get_size_guide():
         max_tokens=300,
     )
 
-
     print(response.choices[0])
 
     choice = response.choices[0]
@@ -213,7 +302,7 @@ def get_size_guide():
 
     # Find the size guide based on brand_id and category_id
     size_guide = size_guides_collection.find_one({
-        'brand_id': ObjectId(brand_id), 
+        'brand_id': ObjectId(brand_id),
         'category_id': category_id
     })
 
@@ -222,8 +311,92 @@ def get_size_guide():
     if not size_guide.get('sizes'):
         return jsonify({"error": "Size guide not found"}), 404
 
-    return jsonify(size_guide.get('sizes'))
+    guides = size_guide.get('sizes')
+    # guides = [
+    #     {
+    #         "Bust": 31,
+    #         "Hips": "31-32",
+    #         "Size": "XXS",
+    #         "Waist": "22-23"
+    #     },
+    #     {
+    #         "Bust": "32½",
+    #         "Hips": "33-34",
+    #         "Size": "XS",
+    #         "Waist": "24-25"
+    #     },
+    #     {
+    #         "Bust": "34-35",
+    #         "Hips": "35-37",
+    #         "Size": "S",
+    #         "Waist": "25-26"
+    #     },
+    #     {
+    #         "Bust": "35-36",
+    #         "Hips": "38-39",
+    #         "Size": "M",
+    #         "Waist": "27-28"
+    #     },
+    #     {
+    #         "Bust": "36-37",
+    #         "Hips": "40-42",
+    #         "Size": "L",
+    #         "Waist": "28-29"
+    #     },
+    #     {
+    #         "Bust": "38-41",
+    #         "Hips": "43-45",
+    #         "Size": "XL",
+    #         "Waist": "30-32"
+    #     },
+    #     {
+    #         "Bust": "42-45",
+    #         "Hips": "46 - 48",
+    #         "Size": "XXL",
+    #         "Waist": 35
+    #     }
+    # ]
+
+    highlighted_guides = []
+
+    for guide in guides:
+        highlighted_guide = {}
+        for dimension, value in guide.items():
+            highlighted_guide[dimension] = {"value": value, "highlight": False}
+
+        highlighted_guides.append(highlighted_guide)
+
+    for dimension, body_value in body_dimensions.items():
+        body_value = to_float(body_value)
+        ranges = [guide[dimension] for guide in guides]
+        # Find the minimum and maximum values in the sizes
+        min_val, max_val = find_min_max(ranges)
+        # Check if the body value is out of bounds
+        is_out_of_bounds = False
+        if body_value < min_val or body_value > max_val:
+            is_out_of_bounds = True
+
+        additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
+        additional_object_needed = False
+
+        if is_out_of_bounds:
+            additional_object[dimension] = {"value": str(body_value), "highlight": True}
+            additional_object_needed = True
+        else:
+            closest_range = find_closest_range(body_value, ranges)
+
+            for guide in highlighted_guides:
+                if dimension in guide:
+                    if is_within_range(body_value, guide[dimension]["value"]):
+                        guide[dimension]["highlight"] = True
+                    elif not guide[dimension]["highlight"] and guide[dimension]["value"] == closest_range:
+                        guide[dimension]["highlight"] = True
+
+        if additional_object_needed:
+            highlighted_guides.append(additional_object)
+
+    return jsonify(highlighted_guides)
+
 
 if __name__ == '__main__':
     app.run(port=5001, debug=True)
-
