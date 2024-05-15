@@ -7,6 +7,10 @@ import re
 from io import BytesIO
 from PIL import Image
 from datetime import datetime
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = Flask(__name__)
 CORS(app)
@@ -49,10 +53,14 @@ def forward_request(url):
 
 @app.route('/advanced-test', methods=['POST'])
 def forward_test():
+    ip_address = request.remote_addr
+    logging.info(f"Request to /advanced-test from IP: {ip_address}")
     return forward_request("https://tryon-advanced-test.tianlong.co.uk/upload/images")
 
 @app.route('/advanced', methods=['POST'])
 def forward_production():
+    ip_address = request.remote_addr
+    logging.info(f"Request to /advanced from IP: {ip_address}")
     return forward_request("https://tryon-advanced.tianlong.co.uk/upload/images")
 
 @app.route('/', methods=['POST'])
