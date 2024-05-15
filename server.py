@@ -313,49 +313,15 @@ def get_size_guide():
 
     guides = size_guide.get('sizes')
     # guides = [
-    #     {
-    #         "Bust": 31,
-    #         "Hips": "31-32",
-    #         "Size": "XXS",
-    #         "Waist": "22-23"
-    #     },
-    #     {
-    #         "Bust": "32½",
-    #         "Hips": "33-34",
-    #         "Size": "XS",
-    #         "Waist": "24-25"
-    #     },
-    #     {
-    #         "Bust": "34-35",
-    #         "Hips": "35-37",
-    #         "Size": "S",
-    #         "Waist": "25-26"
-    #     },
-    #     {
-    #         "Bust": "35-36",
-    #         "Hips": "38-39",
-    #         "Size": "M",
-    #         "Waist": "27-28"
-    #     },
-    #     {
-    #         "Bust": "36-37",
-    #         "Hips": "40-42",
-    #         "Size": "L",
-    #         "Waist": "28-29"
-    #     },
-    #     {
-    #         "Bust": "38-41",
-    #         "Hips": "43-45",
-    #         "Size": "XL",
-    #         "Waist": "30-32"
-    #     },
-    #     {
-    #         "Bust": "42-45",
-    #         "Hips": "46 - 48",
-    #         "Size": "XXL",
-    #         "Waist": 35
-    #     }
-    # ]
+    #       { "Hips": '33 - 34', "Size": '0', "Waist": '24', "Brest": '22'},
+    #       { "Hips": '35', "Size": '2', "Waist": '25' },
+    #       { "Hips": '36', "Size": '4', "Waist": '27' },
+    #       { "Hips": '37', "Size": '6', "Waist": '28' },
+    #       { "Hips": '38', "Size": '8', "Waist": '29' },
+    #       { "Hips": '39', "Size": '10', "Waist": '30' },
+    #       { "Hips": '41', "Size": '12', "Waist": '31' },
+    #       { "Hips": '42 - 44', "Size": '14', "Waist": '32' }
+    #     ]
 
     highlighted_guides = []
 
@@ -369,7 +335,7 @@ def get_size_guide():
     for dimension, body_value in body_dimensions.items():
         # body_value could only be valid number
         body_value = to_float(body_value)
-        ranges = [guide[dimension] for guide in guides]
+        ranges = [guide[dimension] for guide in guides if dimension in guide]
         # Find the minimum and maximum values in the sizes
         min_val, max_val = find_min_max(ranges)
         # Check if the body value is out of bounds
