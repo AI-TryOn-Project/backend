@@ -367,6 +367,7 @@ def get_size_guide():
         highlighted_guides.append(highlighted_guide)
 
     for dimension, body_value in body_dimensions.items():
+        # body_value could only be valid number
         body_value = to_float(body_value)
         ranges = [guide[dimension] for guide in guides]
         # Find the minimum and maximum values in the sizes
