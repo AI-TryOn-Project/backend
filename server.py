@@ -79,12 +79,9 @@ def analyze_profile():
 
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
-    print("1111")
     data = request.get_json()
-    print("here")
     log_data = data.copy()
     # Remove sensitive keys
-    print("1111")
     log_data.pop('base64_image', None)
     logging.info(f"New size recommendation request: Request Data={log_data}")
 
@@ -92,7 +89,6 @@ def get_size_recommendation():
     base64_image = data.get('base64_image')
     tabUrl = data.get('tabUrl')  # New parameter
     showing_chart = data.get('showing_chart', False)
-    print("there")
     # Clean the URL to remove query parameters
     cleaned_url = clean_url(tabUrl)
 
@@ -139,13 +135,14 @@ def get_size_recommendation():
 
     print(content_text)
     # highlight content_text
-    # content_text = highlight(content_text, body_measurements)
+    content_text = json.loads(content_text)
+    content_text = highlight(content_text, body_measurements)
 
     if tabUrl:
-        recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
-        return jsonify(json.loads(content_text))
+        recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": content_text})
+        return jsonify(content_text)
 
-    return jsonify(json.loads(content_text))
+    return jsonify(content_text)
 
 
 def parse_dimension_range(range_str):
