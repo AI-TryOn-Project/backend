@@ -174,7 +174,7 @@ def get_value(value):
         low, high = map(to_float, range_str.split('-'))
         return high
     else:
-        return to_float(range_str) == value
+        return to_float(range_str)
 
 
 # Helper function to check if a dimension is within a range
@@ -289,6 +289,7 @@ def highlight(guides, body_dimensions):
     # Update the Size highlight of the object with the maximum highlighted value
     if max_highlighted_obj:
         max_highlighted_obj["Size"]["highlight"] = True
+        print()
     return highlighted_guides
 
 
