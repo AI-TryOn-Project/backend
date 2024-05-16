@@ -80,9 +80,10 @@ def analyze_profile():
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
     data = request.get_json()
-
+    print("here")
     log_data = data.copy()
     # Remove sensitive keys
+    print("1111")
     log_data.pop('base64_image', None)
     logging.info(f"New size recommendation request: Request Data={log_data}")
 
@@ -90,7 +91,7 @@ def get_size_recommendation():
     base64_image = data.get('base64_image')
     tabUrl = data.get('tabUrl')  # New parameter
     showing_chart = data.get('showing_chart', False)
-
+    print("there")
     # Clean the URL to remove query parameters
     cleaned_url = clean_url(tabUrl)
 
