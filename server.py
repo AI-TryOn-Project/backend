@@ -232,6 +232,7 @@ def highlight(guides, body_dimensions):
         body_value = to_float(body_value)
         ranges = [guide[dimension] for guide in guides if dimension in guide]
         # Find the minimum and maximum values in the sizes
+        print(ranges)
         min_val, max_val = find_min_max(ranges)
         # Check if the body value is out of bounds
         is_out_of_bounds = False
