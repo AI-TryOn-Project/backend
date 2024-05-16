@@ -137,12 +137,13 @@ def get_size_recommendation():
 
     print(content_text)
     # highlight content_text
+    highlighted_guides = highlight(content_text, body_measurements)
 
     if tabUrl:
-        recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
-        return jsonify(json.loads(content_text))
+        recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(highlighted_guides)})
+        return jsonify(json.loads(highlighted_guides))
 
-    return jsonify(content_text)
+    return jsonify(highlighted_guides)
 
 
 def parse_dimension_range(range_str):
