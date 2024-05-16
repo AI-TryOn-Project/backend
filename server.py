@@ -79,6 +79,7 @@ def analyze_profile():
 
 @app.route('/get-size-recommendation', methods=['POST'])
 def get_size_recommendation():
+    print("1111")
     data = request.get_json()
     print("here")
     log_data = data.copy()
