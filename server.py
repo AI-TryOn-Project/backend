@@ -282,19 +282,18 @@ def highlight(guides, body_dimensions):
     max_highlighted_value = float('-inf')
     max_highlighted_obj = None
 
+    size_unavailable = any(item["Size"]["value"] == "Size Unavailable" for item in highlighted_guides)
+    if not size_unavailable:
+        for obj in highlighted_guides:
+            for key, value in obj.items():
+                if key != "Size" and value["highlight"]:
+                    if get_value(value["value"]) >= max_highlighted_value:
+                        max_highlighted_value = get_value(value["value"])
+                        max_highlighted_obj = obj
 
-
-    for obj in highlighted_guides:
-        for key, value in obj.items():
-            if key != "Size" and value["highlight"]:
-                if get_value(value["value"]) >= max_highlighted_value:
-                    max_highlighted_value = get_value(value["value"])
-                    max_highlighted_obj = obj
-
-    # Update the Size highlight of the object with the maximum highlighted value
-    if max_highlighted_obj:
-        max_highlighted_obj["Size"]["highlight"] = True
-        print()
+        # Update the Size highlight of the object with the maximum highlighted value
+        if max_highlighted_obj:
+            max_highlighted_obj["Size"]["highlight"] = True
     return highlighted_guides
 
 
