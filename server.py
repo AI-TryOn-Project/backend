@@ -237,6 +237,9 @@ def highlight(guides, body_dimensions):
         is_out_of_bounds = False
         if body_value < min_val or body_value > max_val:
             is_out_of_bounds = True
+            print(min_val)
+            print(max_val)
+            print(body_value)
 
         additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
         additional_object_needed = False
