@@ -145,7 +145,7 @@ def get_size_recommendation():
         recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
         return jsonify(json.loads(content_text))
 
-    return jsonify(content_text)
+    return jsonify(json.loads(content_text))
 
 
 def parse_dimension_range(range_str):
