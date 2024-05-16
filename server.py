@@ -136,6 +136,7 @@ def get_size_recommendation():
     print(content_text)
     # highlight content_text
     content_text = json.loads(content_text)
+    print(content_text)
     content_text = highlight(content_text, body_measurements)
 
     if tabUrl:
