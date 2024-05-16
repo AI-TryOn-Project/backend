@@ -263,7 +263,7 @@ def highlight(guides, body_dimensions):
             if body_value < min_val:
                 highlighted_guides.insert(0, additional_object)
             elif body_value > max_val:
-                highlighted_guides.insert(-1, additional_object)
+                highlighted_guides.append(additional_object)
             # additional_object_needed = True
         else:
             closest_range = find_closest_range(body_value, ranges)
