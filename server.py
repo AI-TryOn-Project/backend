@@ -230,7 +230,7 @@ def highlight(guides, body_dimensions):
     for dimension, body_value in body_dimensions.items():
         # body_value could only be valid number
         body_value = to_float(body_value)
-        ranges = [guide[dimension] for guide in guides if dimension in guide]
+        ranges = [str(guide[dimension]) for guide in guides if dimension in guide]
         # Find the minimum and maximum values in the sizes
         print(ranges)
         min_val, max_val = find_min_max(ranges)
@@ -238,9 +238,6 @@ def highlight(guides, body_dimensions):
         is_out_of_bounds = False
         if body_value < min_val or body_value > max_val:
             is_out_of_bounds = True
-            print(min_val)
-            print(max_val)
-            print(body_value)
 
         additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
         additional_object_needed = False
@@ -250,12 +247,11 @@ def highlight(guides, body_dimensions):
             additional_object_needed = True
         else:
             closest_range = find_closest_range(body_value, ranges)
-
             for guide in highlighted_guides:
                 if dimension in guide:
                     if is_within_range(body_value, guide[dimension]["value"]):
                         guide[dimension]["highlight"] = True
-                    elif not guide[dimension]["highlight"] and guide[dimension]["value"] == closest_range:
+                    elif not guide[dimension]["highlight"] and str(guide[dimension]["value"]) == closest_range:
                         guide[dimension]["highlight"] = True
 
         if additional_object_needed:
@@ -295,6 +291,7 @@ def get_size_guide():
     # Clean the product_url to remove query parameters
     cleaned_product_url = clean_url(product_url)
     print(cleaned_product_url)
+
     # Check if there's an existing entry for this cleaned URL in recommendations_collection
     existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_product_url})
     if existing_entry:
