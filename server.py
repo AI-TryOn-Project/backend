@@ -287,7 +287,7 @@ def highlight(guides, body_dimensions):
     for obj in highlighted_guides:
         for key, value in obj.items():
             if key != "Size" and value["highlight"]:
-                if get_value(value["value"]) > max_highlighted_value:
+                if get_value(value["value"]) >= max_highlighted_value:
                     max_highlighted_value = get_value(value["value"])
                     max_highlighted_obj = obj
 
