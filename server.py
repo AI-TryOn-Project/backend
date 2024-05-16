@@ -217,6 +217,14 @@ def find_min_max(ranges):
     return min_val, max_val
 
 
+def get_max_dimension(body_dimensions):
+    # Convert all values to float
+    values = [float(value) for value in body_dimensions.values()]
+
+    # Find the maximum value
+    max_value = max(values)
+
+
 def highlight(guides, body_dimensions):
     highlighted_guides = []
 
@@ -257,6 +265,21 @@ def highlight(guides, body_dimensions):
         if additional_object_needed:
             highlighted_guides.append(additional_object)
 
+    # highlight size based on max dimension
+    # Find the maximum highlighted value and the corresponding object
+    max_highlighted_value = float('-inf')
+    max_highlighted_obj = None
+
+    for obj in highlighted_guides:
+        for key, value in obj.items():
+            if key != "Size" and value["highlight"]:
+                if value["value"] > max_highlighted_value:
+                    max_highlighted_value = value["value"]
+                    max_highlighted_obj = obj
+
+    # Update the Size highlight of the object with the maximum highlighted value
+    if max_highlighted_obj:
+        max_highlighted_obj["Size"]["highlight"] = True
     return highlighted_guides
 
 
