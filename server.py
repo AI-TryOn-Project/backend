@@ -136,6 +136,8 @@ def get_size_recommendation():
     content_text = choice.message.content
 
     print(content_text)
+    # highlight content_text
+
     if tabUrl:
         recommendations_collection.insert_one({"tabUrl": cleaned_url, "recommendation": json.loads(content_text)})
         return jsonify(json.loads(content_text))
@@ -213,6 +215,48 @@ def find_min_max(ranges):
 
     return min_val, max_val
 
+
+def highlight(guides, body_dimensions):
+    highlighted_guides = []
+
+    for guide in guides:
+        highlighted_guide = {}
+        for dimension, value in guide.items():
+            highlighted_guide[dimension] = {"value": value, "highlight": False}
+
+        highlighted_guides.append(highlighted_guide)
+
+    for dimension, body_value in body_dimensions.items():
+        # body_value could only be valid number
+        body_value = to_float(body_value)
+        ranges = [guide[dimension] for guide in guides if dimension in guide]
+        # Find the minimum and maximum values in the sizes
+        min_val, max_val = find_min_max(ranges)
+        # Check if the body value is out of bounds
+        is_out_of_bounds = False
+        if body_value < min_val or body_value > max_val:
+            is_out_of_bounds = True
+
+        additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
+        additional_object_needed = False
+
+        if is_out_of_bounds:
+            additional_object[dimension] = {"value": str(body_value), "highlight": True}
+            additional_object_needed = True
+        else:
+            closest_range = find_closest_range(body_value, ranges)
+
+            for guide in highlighted_guides:
+                if dimension in guide:
+                    if is_within_range(body_value, guide[dimension]["value"]):
+                        guide[dimension]["highlight"] = True
+                    elif not guide[dimension]["highlight"] and guide[dimension]["value"] == closest_range:
+                        guide[dimension]["highlight"] = True
+
+        if additional_object_needed:
+            highlighted_guides.append(additional_object)
+
+    return highlighted_guides
 
 @app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
@@ -324,45 +368,45 @@ def get_size_guide():
     #       { "Hips": '42 - 44', "Size": '14', "Waist": '32' }
     #     ]
 
-    highlighted_guides = []
-
-    for guide in guides:
-        highlighted_guide = {}
-        for dimension, value in guide.items():
-            highlighted_guide[dimension] = {"value": value, "highlight": False}
-
-        highlighted_guides.append(highlighted_guide)
-
-    for dimension, body_value in body_dimensions.items():
-        # body_value could only be valid number
-        body_value = to_float(body_value)
-        ranges = [guide[dimension] for guide in guides if dimension in guide]
-        # Find the minimum and maximum values in the sizes
-        min_val, max_val = find_min_max(ranges)
-        # Check if the body value is out of bounds
-        is_out_of_bounds = False
-        if body_value < min_val or body_value > max_val:
-            is_out_of_bounds = True
-
-        additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
-        additional_object_needed = False
-
-        if is_out_of_bounds:
-            additional_object[dimension] = {"value": str(body_value), "highlight": True}
-            additional_object_needed = True
-        else:
-            closest_range = find_closest_range(body_value, ranges)
-
-            for guide in highlighted_guides:
-                if dimension in guide:
-                    if is_within_range(body_value, guide[dimension]["value"]):
-                        guide[dimension]["highlight"] = True
-                    elif not guide[dimension]["highlight"] and guide[dimension]["value"] == closest_range:
-                        guide[dimension]["highlight"] = True
-
-        if additional_object_needed:
-            highlighted_guides.append(additional_object)
-
+    # highlighted_guides = []
+    #
+    # for guide in guides:
+    #     highlighted_guide = {}
+    #     for dimension, value in guide.items():
+    #         highlighted_guide[dimension] = {"value": value, "highlight": False}
+    #
+    #     highlighted_guides.append(highlighted_guide)
+    #
+    # for dimension, body_value in body_dimensions.items():
+    #     # body_value could only be valid number
+    #     body_value = to_float(body_value)
+    #     ranges = [guide[dimension] for guide in guides if dimension in guide]
+    #     # Find the minimum and maximum values in the sizes
+    #     min_val, max_val = find_min_max(ranges)
+    #     # Check if the body value is out of bounds
+    #     is_out_of_bounds = False
+    #     if body_value < min_val or body_value > max_val:
+    #         is_out_of_bounds = True
+    #
+    #     additional_object = {"Size": {"value": "Size Unavailable", "highlight": False}}
+    #     additional_object_needed = False
+    #
+    #     if is_out_of_bounds:
+    #         additional_object[dimension] = {"value": str(body_value), "highlight": True}
+    #         additional_object_needed = True
+    #     else:
+    #         closest_range = find_closest_range(body_value, ranges)
+    #
+    #         for guide in highlighted_guides:
+    #             if dimension in guide:
+    #                 if is_within_range(body_value, guide[dimension]["value"]):
+    #                     guide[dimension]["highlight"] = True
+    #                 elif not guide[dimension]["highlight"] and guide[dimension]["value"] == closest_range:
+    #                     guide[dimension]["highlight"] = True
+    #
+    #     if additional_object_needed:
+    #         highlighted_guides.append(additional_object)
+    highlighted_guides = highlight(guides, body_dimensions)
     return jsonify(highlighted_guides)
 
 
