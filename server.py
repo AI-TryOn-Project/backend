@@ -213,6 +213,7 @@ def find_min_max(ranges):
 
     return min_val, max_val
 
+
 @app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
     data = request.get_json()
@@ -366,4 +367,4 @@ def get_size_guide():
 
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(port=5200, debug=True)
