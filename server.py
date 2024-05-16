@@ -259,6 +259,7 @@ def highlight(guides, body_dimensions):
 
     return highlighted_guides
 
+
 @app.route('/get-size-guide', methods=['POST'])
 def get_size_guide():
     data = request.get_json()
@@ -293,8 +294,9 @@ def get_size_guide():
     # Check if there's an existing entry for this cleaned URL in recommendations_collection
     existing_entry = recommendations_collection.find_one({"tabUrl": cleaned_product_url})
     if existing_entry:
-        return jsonify(existing_entry["recommendation"]), 200  # Return the stored result directly
-
+        recommendation = highlight(existing_entry["recommendation"], body_dimensions)
+        # return jsonify(existing_entry["recommendation"]), 200  # Return the stored result directly
+        return jsonify(recommendation), 200
     domain = extract_domain(product_url)
     print(f"Domain: {domain}")
 
