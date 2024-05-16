@@ -260,7 +260,11 @@ def highlight(guides, body_dimensions):
 
         if is_out_of_bounds:
             additional_object[dimension] = {"value": str(body_value), "highlight": True}
-            additional_object_needed = True
+            if body_value < min_val:
+                highlighted_guides.insert(0, additional_object)
+            elif body_value > max_val:
+                highlighted_guides.insert(-1, additional_object)
+            # additional_object_needed = True
         else:
             closest_range = find_closest_range(body_value, ranges)
             for guide in highlighted_guides:
@@ -270,13 +274,15 @@ def highlight(guides, body_dimensions):
                     elif not guide[dimension]["highlight"] and str(guide[dimension]["value"]) == closest_range:
                         guide[dimension]["highlight"] = True
 
-        if additional_object_needed:
-            highlighted_guides.append(additional_object)
+        # if additional_object_needed:
+        #     highlighted_guides.append(additional_object)
 
     # highlight size based on max dimension
     # Find the maximum highlighted value and the corresponding object
     max_highlighted_value = float('-inf')
     max_highlighted_obj = None
+
+
 
     for obj in highlighted_guides:
         for key, value in obj.items():
