@@ -8,6 +8,11 @@ from openai import OpenAI
 import json
 import logging
 
+from os import environ as env
+from dotenv import load_dotenv, find_dotenv
+from authlib.integrations.flask_oauth2 import ResourceProtector
+from validator import Auth0JWTBearerTokenValidator
+
 app = Flask(__name__)
 CORS(app)
 
@@ -26,6 +31,15 @@ logging.basicConfig(filename='app.log', level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
+load_dotenv(find_dotenv())
+require_auth = ResourceProtector()
+validator = Auth0JWTBearerTokenValidator(
+    env.get("AUTH0_DOMAIN"),  # e.g., "dev-cgygdfl3ircktmfo.us.auth0.com"
+    env.get("AUTH0_AUDIENCE"),  # e.g., "https://myapi/"
+    ['RS256']  # Specify the algorithm
+)
+require_auth.register_token_validator(validator)
+
 def clean_url(url):
     parsed_url = urlparse(url)
     # Return the URL without query parameters
@@ -41,6 +55,7 @@ def extract_domain(url):
 
 
 @app.route('/analyze-profile', methods=['POST'])
+@require_auth(None)
 def analyze_profile():
     data = request.get_json()
     base64_image = data.get('base64_image')
@@ -78,6 +93,7 @@ def analyze_profile():
 
 
 @app.route('/get-size-recommendation', methods=['POST'])
+@require_auth(None)
 def get_size_recommendation():
     data = request.get_json()
 
@@ -214,6 +230,7 @@ def find_min_max(ranges):
     return min_val, max_val
 
 @app.route('/get-size-guide', methods=['POST'])
+@require_auth(None)
 def get_size_guide():
     data = request.get_json()
     product_url = data.get('product_url')
